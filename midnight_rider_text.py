@@ -12,3 +12,9 @@ WE CAN'T LET THEM HAVE IT.
 ONE GOAL: SURVIVIAL... AND THE CAR
 REACH THE SAFEHOUSE BEFORE THE MAN 
 GO GETCHU."""
+
+CHOICES = """
+    --- Your Choices ---
+    Q. Quit the game.
+    ---
+"""
