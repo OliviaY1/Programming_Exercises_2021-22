@@ -29,8 +29,10 @@ class Game:
         self.done = False
         self.distance_traveled = 0
         self.amount_tofu = MAX_TOFU
-        self.agents_distance = -28
+        self.agents_distance = -20
         self.fuel = MAX_FUEL
+        self.hunger = 0
+        self.endgame_reason = 0
 
     def introduction(self) -> None:
         """Print the introduction text"""
@@ -46,7 +48,6 @@ class Game:
 
     def show_choices(self) -> None:
         """Show user the choices"""
-        time.sleep(1)
         print(midnight_rider_text.CHOICES)
         time.sleep(1)
 
@@ -58,8 +59,46 @@ class Game:
 
         # Based on their choice, change the attributes
         # of the class
+        agents_distance_now = random.randrange(7,15)
+
         if user_choice == "q":
             self.done = True
+        elif user_choice == 'a':
+            # Consume one tofu IF and ONLY IF we have some
+            # available
+            # Decrease hunger to 0
+            if self.amount_tofu > 0:
+                self.amount_tofu -= 1
+                self.hunger = 0
+                # Give the player some feedback
+                print(midnight_rider_text.EAT_TOFU)
+            else:
+                print(midnight_rider_text.NO_TOFU)
+
+        elif user_choice == 'b':
+            player_distance_now = random.randrange(5,10)
+            self.distance_traveled += player_distance_now
+            self.agents_distance += agents_distance_now - player_distance_now
+
+            # Burn fuel
+            self.fuel -= random.randrange(3, 8)
+
+            # Give the player some feedback
+            print(f"\n-------You drive conservatively.")
+            print(f"-------You traveled {player_distance_now} kms.\n")
+
+        elif user_choice == 'c':
+            # Move the player
+            player_distance_now = random.randrange(10,16)
+            self.distance_traveled += player_distance_now
+            # Move the agents
+            self.agents_distance += agents_distance_now - player_distance_now
+            # Burn fuel
+            self.fuel -= random.randrange(5,11)
+            # Give the player some feedback
+            print(f"\n---------ZOOOOOOOOOOOOM")
+            print(f"-------You traveled {player_distance_now} kms.\n")
+
         elif user_choice == "d":
             self.fuel = MAX_FUEL
             self.agents_distance += random.randrange(7,15)
@@ -71,6 +110,21 @@ class Game:
             print(f"Agent's Distance: {abs(self.agents_distance)} km behind")
             self.typewriter_effect("-----LOADING-----")
             time.sleep(2)
+    def upkeep(self) -> None:
+        """Give the uder reminders of hunger"""
+        if self.hunger > 40:
+            print(midnight_rider_text.SEVERE_HUNGER)
+        elif self.hunger > 25:
+            print(midnight_rider_text.HUNGER)
+        time.sleep(1)
+    def check_endgame(self) ->None:
+        if self.agents_distance >= 0:
+            self.done = True
+            self.endgame_reason = ENDGAME_REASONS["LOSE_AGENTS"]
+        if self.fuel <= 0:
+            self.done = True
+            self.endgame_reason = ENDGAME_REASONS["LOSE_FUEL"]
+
 
 def main() -> None:
     game = Game() # starting a new game
@@ -79,11 +133,15 @@ def main() -> None:
     # Main Loop
     while not game.done:
         # Display the choices to the player
+        game.upkeep()
         game.show_choices()
         # Ask the player what they want to do
         game.get_choice()
-        # TODO: Change the state of the environment
-        # TODO: Check win/lose conditions
+        game.check_endgame()
+    time.sleep(2)
+    game.typewriter_effect(
+        midnight_rider_text.ENDGAME_TEXT[game.endgame_reason]
+    )
 
 if __name__ == "__main__":
     main()
