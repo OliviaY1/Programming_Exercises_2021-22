@@ -124,6 +124,13 @@ class Game:
         if self.fuel <= 0:
             self.done = True
             self.endgame_reason = ENDGAME_REASONS["LOSE_FUEL"]
+        # LOSE - Perish because of hunger
+        if self.hunger > MAX_HUNGER:
+            self.done = True
+            self.endgame_reason = ENDGAME_REASONS["LOSE_HUNGER"]
+        if self.distance_traveled >= MAX_DISTSNCE:
+            self.done = True
+            self.endgame_reason = ENDGAME_REASONS["WIN"]
 
 
 def main() -> None:
