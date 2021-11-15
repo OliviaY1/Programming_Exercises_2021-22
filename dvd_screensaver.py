@@ -42,7 +42,7 @@ class Dvdimage:
         self.x_vel = 5
         self.y_vel = 3
     def rect(self) -> pygame.rect:
-        return [(self.x, self.y), self.width, self.height]
+        return [self.x, self.y, self.width, self.height]
     def update(self) -> None:
         # update the coordinates of x and y
         self.x += self.x_vel
