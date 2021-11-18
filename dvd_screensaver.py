@@ -1,5 +1,5 @@
-# Pygame Boilerplate
-# Author: Ubial
+# Pygame- DVD IMAGE
+# Author: OY
 # 2021 Version
 import random
 
