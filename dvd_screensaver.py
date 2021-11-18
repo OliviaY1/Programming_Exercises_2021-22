@@ -1,7 +1,7 @@
 # Pygame Boilerplate
 # Author: Ubial
 # 2021 Version
-
+import random
 
 import pygame
 
@@ -16,6 +16,7 @@ GREY = (247, 237, 226)
 PINK = (245, 202, 195)
 GREEN = (132, 165, 157)
 PEACH = (242, 132, 130)
+color_pick = [YELLOW, GREY, PINK, GREEN, PEACH]
 
 
 SCREEN_WIDTH  = 800
@@ -39,14 +40,34 @@ class Dvdimage:
         self.width = 150
         self.height = 90
         self.color = PINK
-        self.x_vel = 5
-        self.y_vel = 3
+        self.x_vel = 4
+        self.y_vel = 2
+        self.img = pygame.image.load("./images/dvdimage.png")
     def rect(self) -> pygame.rect:
         return [self.x, self.y, self.width, self.height]
     def update(self) -> None:
         # update the coordinates of x and y
         self.x += self.x_vel
         self.y += self.y_vel
+        ran = random.randint(0,4)
+        if self.x + self.width > SCREEN_WIDTH:
+            self.x = SCREEN_WIDTH - self.width
+            self.x_vel = - self.x_vel
+            self.color = color_pick[ran]
+        elif self.x < 0:
+            self.x = 0
+            self.x_vel = -self.x_vel
+            self.color = color_pick[ran]
+        if self.y + self.height > SCREEN_HEIGHT:
+            self.y = SCREEN_HEIGHT - self.height
+            self.y_vel = -self.y_vel
+            self.color = color_pick[ran]
+        elif self.y < 0:
+            self.y = 0
+            self.y_vel = - self.y_vel
+            self.color = color_pick[ran]
+
+
 
 
 
@@ -61,9 +82,12 @@ def main() -> None:
     done = False
     clock = pygame.time.Clock()
     dvd_image = Dvdimage()
+    # import bg image
+    bg_image = pygame.image.load('./images/backgroundimage.jpg')
+    bg_image = pygame.transform.scale(bg_image, (990, 600))
+
     # ----------- MAIN LOOP
     while not done:
-        # ----------- EVENT LISTENER
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
@@ -71,10 +95,19 @@ def main() -> None:
         # ----------- CHANGE ENVIRONMENT
         dvd_image.update()
         print(f"x:{dvd_image.x}, y:{dvd_image.y}")
+
         # ----------- DRAW THE ENVIRONMENT
-        screen.fill(BLACK)      # fill with bgcolor
+        # Draw the bg image
+        screen.blit(bg_image, (0,0))
+
+        # Draw the rectangle
         pygame.draw.rect(screen, dvd_image.color, dvd_image.rect())
-        # Update the screen
+
+        # Draw the image "dvd" on the rectangle
+        dvd_image.img = pygame.transform.scale(dvd_image.img, (150, 160))
+        screen.blit(dvd_image.img, (dvd_image.x-3, dvd_image.y-40))
+
+        # ------------ Update the screen
         pygame.display.flip()
 
         # ----------- CLOCK TICK
