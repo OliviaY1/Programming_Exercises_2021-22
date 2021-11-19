@@ -26,8 +26,8 @@ class Snow:
         self.fall_speed = speed
         x = random.randint(1, 800)
         self.x = x
-        self.y = SCREEN_HEIGHT/2
-    def fall(self)->None:
+        self.y = SCREEN_HEIGHT
+    def update(self)->None:
         self.y += self.fall_speed
         if self.y > self.radius + SCREEN_HEIGHT:
             return None
@@ -43,7 +43,21 @@ def main() -> None:
     # Create some local variables that describe the environment
     done = False
     clock = pygame.time.Clock()
-    snow = Snow()
+    num_snowflakes = 230
+    snowflakes = []
+    for i in range(num_snowflakes - 150):
+        close_snowflake = Snow()
+        close_snowflake.size = random.choice([4, 5, 6])
+        close_snowflake.y_vel = random.choice([1, 2])
+        snowflakes.append(close_snowflake)
+    for i in range(num_snowflakes - 100):
+        close_snowflake = Snow()
+        close_snowflake.size = random.choice([3, 4])
+        close_snowflake.y_vel = random.choice([2, 3])
+        snowflakes.append(close_snowflake)
+        # Create snowflakes in background
+    for i in range(num_snowflakes):
+        snowflakes.append(Snow())
     # ----------- MAIN LOOP
     while not done:
         # ----------- EVENT LISTENER
@@ -52,18 +66,15 @@ def main() -> None:
                 done = True
 
         # ----------- CHANGE ENVIRONMENT
-
+        for snow in snowflakes:
+            snow.update()
         # ----------- DRAW THE ENVIRONMENT
         screen.fill(BGCOLOUR)      # fill with bgcolor
         # Draw the snow
-        snow.fall()
-        snowflasks = []
-        for i in range(100):
-            snowflasks.append()
 
-        for a_snow in snowflasks:
-            pygame.draw.circle(screen, WHITE, (a_snow.x, a_snow.y), a_snow.radius)
-        print(snow.x, snow.y)
+
+        for snow in snowflakes:
+            pygame.draw.circle(screen, WHITE, (snow.x, snow.y), snow.radius)
         # Update the screen
         pygame.display.flip()
 
