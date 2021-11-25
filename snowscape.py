@@ -1,5 +1,6 @@
 # Relaxing Snowscape
-# Author: Ubial
+# Author: oy
+# Nov 25
 
 
 import random

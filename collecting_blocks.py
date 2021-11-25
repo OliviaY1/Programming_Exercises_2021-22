@@ -1,5 +1,6 @@
 # Collecting Blocks Example
-# Author: Ubial
+# Author: oy
+# Nov 25
 
 
 import random
@@ -39,7 +40,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
 
         # Create the image of the block
-        self.image = pygame.image.load("./images/smb_smallmario.png")
+        self.image = pygame.image.load("./images/dvdimage.png") # TODO: uplaod small mario as the user's mouse
 
         # Based on the image, create a Rect for the block
         self.rect = self.image.get_rect()
