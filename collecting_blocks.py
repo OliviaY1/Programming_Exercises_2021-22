@@ -89,8 +89,8 @@ class Enemy(pygame.sprite.Sprite):
             random.randrange(SCREEN_HEIGHT)
         )
         # Define the initial velocity
-        self.x_vel = random.choice([-4,-3,3,4])
-        self.y_vel = random.choice([-4,-3,3,4])
+        self.x_vel = random.choice([-4, -3,3,4])
+        self.y_vel = random.choice([-4, -3,3,4])
 
     def update(self)-> None:
         """Calculate movement"""
@@ -104,6 +104,13 @@ class Enemy(pygame.sprite.Sprite):
         if self.rect.right > SCREEN_WIDTH:
             self.rect.right = SCREEN_WIDTH
             self.x_vel = - self.x_vel # bounce
+        # Y -
+        if self.rect.y <0:
+            self.rect.y = 0
+            self.y_vel = - self.y_vel
+        if self.rect.bottom > SCREEN_HEIGHT:
+            self.rect.bottom = SCREEN_HEIGHT
+            self.y_vel = - self.y_vel
 
 
 def main() -> None:
@@ -145,6 +152,7 @@ def main() -> None:
         # Create an enemy
         enemy = Enemy()
         # Add it to the sprites list (enemy_sprites and all_sprites)
+        enemey_sprites.add(enemy)
         all_sprites.add(enemy)
     # Create the Player block
     player = Player()
@@ -167,6 +175,8 @@ def main() -> None:
         mouse_pos = pygame.mouse.get_pos()
         player.rect.x, player.rect.y = mouse_pos
 
+        # make all sprites move
+        all_sprites.update()
         # Check all collisions between player and the blocks
         blocks_collided = pygame.sprite.spritecollide(player, block_sprites, True)
 
