@@ -4,7 +4,9 @@
 
 
 import random
+import time
 import pygame
+
 
 pygame.init()
 
@@ -124,7 +126,9 @@ def main() -> None:
     clock = pygame.time.Clock()
     num_blocks = 100
     score = 0
-    num_enemies = 10
+    num_enemies = 5
+    time_start = time.time()
+    time_invincible = 2
 
     pygame.mouse.set_visible(False)
 
@@ -183,6 +187,15 @@ def main() -> None:
         for block in blocks_collided:
             score += 1
             print(f"Score: {score}")
+
+        # Check all collisions between player and ENEMY
+        enemies_collided = pygame.sprite.spritecollide(player, enemey_sprites, False)
+
+        # set a time for invincibility at the beginning of the game
+        if time.time() - time_start > time_invincible:
+            for enemy in enemies_collided:
+                done = True
+                print(f"Game OVer!")
         # ----------- DRAW THE ENVIRONMENT
         screen.fill(BGCOLOUR)      # fill with bgcolor
 
