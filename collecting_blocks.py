@@ -1,12 +1,9 @@
 # Collecting Blocks Example
-# Author: oy
-# Nov 25
-
+# Creditted to Mr. Ubial; minor changes by Olivia Y
 
 import random
 import time
 import pygame
-
 
 pygame.init()
 
@@ -21,101 +18,118 @@ BLK_CHOCOLATE = (25, 17, 2)
 
 BGCOLOUR =  WHITE
 
-SCREEN_WIDTH  = 800
+SCREEN_WIDTH =  800
 SCREEN_HEIGHT = 600
 SCREEN_SIZE   = (SCREEN_WIDTH, SCREEN_HEIGHT)
-WINDOW_TITLE  = "Collecing Blocks"
+WINDOW_TITLE  = "Collecting Blocks"
 
 
 class Player(pygame.sprite.Sprite):
     """Describes a player object
     A subclass of pygame.sprite.Sprite
 
-    Attributes:
+    Attributes:≤
         image: Surface that is the visual
             representation of our Block
         rect: numerical representation of
             our Block [x, y, width, height]
+        hp: describe how much health our
+            player has
     """
     def __init__(self) -> None:
         # Call the superclass constructor
         super().__init__()
 
         # Create the image of the block
-        self.image = pygame.image.load("./images/smb_mario.png") # TODO: uplaod small mario as the user's mouse
-        self.image = pygame.transform.scale(self.image, (57,78))
+        self.image = pygame.image.load("./images/smb_mario.png")
+        self.image = pygame.transform.scale(self.image, (48, 64))
+
         # Based on the image, create a Rect for the block
         self.rect = self.image.get_rect()
+
+        # Initial health points
         self.hp = 250
-    def hp_remaining(self) -> int:
+
+    def hp_remaining(self) -> float:
+        """Return the percent of health remaining"""
         return self.hp / 250
 
 
-class Block(pygame.sprite.Sprite):
-    """Describes a block object
-    A subclass of pygame.sprite.Sprite
-
-    Attributes:
-        image: Surface that is the visual
-            representation of our Block
-        rect: numerical representation of
-            our Block [x, y, width, height]
-    """
-    def __init__(self, colour: tuple, width: int, height: int) -> None:
-        """
-        Arguments:
-        :param colour: 3-tuple (r, g, b)
-        :param width: width in pixels
-        :param height: height in pixels
-        """
-        # Call the superclass constructor
-        super().__init__()
-
-        # Create the image of the block
-        self.image = pygame.Surface([width, height])
-        self.image.fill(colour)
-
-        # Based on the image, create a Rect for the block
-        self.rect = self.image.get_rect()
 class Enemy(pygame.sprite.Sprite):
     """The enemy sprites
-    Attribute:
-        images: Surface that is the visual representation
-        rect: Rect (x, y, width, height)"""
+
+    Attributes:
+        image: Surface that is the visual representation
+        rect: Rect (x, y, width, height)
+        x_vel: x velocity
+        y_vel: y velocity
+    """
     def __init__(self):
         super().__init__()
+
         self.image = pygame.image.load("./images/smb_goomba.png")
-        # resize the image
-        self.image = pygame.transform.scale(self.image, (60, 80))
+        # Resize the image (scale)
+        self.image = pygame.transform.scale(self.image, (56, 40))
+
         self.rect = self.image.get_rect()
-        # define the initial location
+        # Define the initial location
         self.rect.x, self.rect.y = (
             random.randrange(SCREEN_WIDTH),
             random.randrange(SCREEN_HEIGHT)
         )
-        # Define the initial velocity
-        self.x_vel = random.choice([-4, -3,3,4])
-        self.y_vel = random.choice([-4, -3,3,4])
 
-    def update(self)-> None:
+        # Define the initial velocity
+        self.x_vel = random.choice([-4, -3, 3, 4])
+        self.y_vel = random.choice([-4, -3, 3, 4])
+
+    def update(self) -> None:
         """Calculate movement"""
         self.rect.x += self.x_vel
         self.rect.y += self.y_vel
+
         # Constrain movement
-        # X-
+        # X -
         if self.rect.left < 0:
             self.rect.x = 0
-            self.x_vel = - self.x_vel # bounce
+            self.x_vel = -self.x_vel    # bounce
         if self.rect.right > SCREEN_WIDTH:
             self.rect.right = SCREEN_WIDTH
-            self.x_vel = - self.x_vel # bounce
+            self.x_vel = -self.x_vel    # bounce
         # Y -
-        if self.rect.y <0:
+        if self.rect.y < 0:
             self.rect.y = 0
-            self.y_vel = - self.y_vel
+            self.y_vel = -self.y_vel
         if self.rect.bottom > SCREEN_HEIGHT:
             self.rect.bottom = SCREEN_HEIGHT
-            self.y_vel = - self.y_vel
+            self.y_vel = -self.y_vel
+
+class Bullet(pygame.sprite.Sprite):
+    """Bullet
+
+    Attributes:
+        image: visual representation
+        rect: mathematical representation (hit box)
+        vel_y: y velocity in px/sec
+    """
+    def __init__(self, coords: tuple):
+        """
+
+        Arguments:
+            coords: tuple of (x,y) to represent initial location
+        """
+        super().__init__()
+
+        self.image = pygame.Surface((5, 10))
+        self.image.fill(BLACK)
+        self.rect = self.image.get_rect()
+
+        # Set the middle of the bullet to be at coords
+        self.rect.center = coords
+
+        self.vel_y = 3
+
+    def update(self):
+        self.rect.y -= self.vel_y
 
 
 def main() -> None:
@@ -127,48 +141,37 @@ def main() -> None:
     # Create some local variables that describe the environment
     done = False
     clock = pygame.time.Clock()
-    num_blocks = 100
+    num_enemies = 15
     score = 0
-    num_enemies = 5
     time_start = time.time()
-    time_invincible = 2
-    endgame_cooldown = 5
+    time_invincible = 5             # seconds
     game_state = "running"
-    time_ened = 0.0
+    endgame_cooldown = 5            # seconds
+    time_ended = 0.0
 
     endgame_messages = {
         "win": "Congratulations, you won!",
         "lose": "Sorry, they got you. Play again!",
     }
+
     font = pygame.font.SysFont("Arial", 25)
+
     pygame.mouse.set_visible(False)
 
     # Create groups to hold Sprites
     all_sprites = pygame.sprite.Group()
-    block_sprites = pygame.sprite.Group()
-    enemey_sprites = pygame.sprite.Group()
+    enemy_sprites = pygame.sprite.Group()
+    bullet_sprites = pygame.sprite.Group()
 
-    # Create all the block sprites and add to block_sprites
-    for i in range(num_blocks):
-        # Create a block (set its parameters)
-        block = Block(BLACK, 20, 15)
-
-        # Set a random location for the block inside the screen
-        block.rect.x = random.randrange(SCREEN_WIDTH - block.rect.width)
-        block.rect.y = random.randrange(SCREEN_HEIGHT - block.rect.height)
-
-        # Add the block to the block_sprites Group
-        # Add the block to the all_sprites Group
-        block_sprites.add(block)
-        all_sprites.add(block)
-
-    # Craete enemy sprites
+    # Create enemy sprites
     for i in range(num_enemies):
         # Create an enemy
         enemy = Enemy()
+
         # Add it to the sprites list (enemy_sprites and all_sprites)
-        enemey_sprites.add(enemy)
+        enemy_sprites.add(enemy)
         all_sprites.add(enemy)
+
     # Create the Player block
     player = Player()
     # Add the Player to all_sprites group
@@ -183,65 +186,78 @@ def main() -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
-        # End-game listener
-        # WIN CONDITION - collect 100 blocks
-        if score == num_blocks:
-            game_state = "won"
-            if time_ened == 0:
-                time_ened = time.time()
-            if time.time() - time_ened >= endgame_cooldown:
-                done = True
-        # LOSE CONDITION - player's hp goes below 0
-        if player.hp <= 0 :
-            game_state = "lose"
+            if event.type == pygame.MOUSEBUTTONUP:
+                if len(bullet_sprites) < 3 and time.time() - time_start > time_invincible:
+                    bullet = Bullet(player.rect.midtop)
+
+                    bullet_sprites.add(bullet)
+                    all_sprites.add(bullet)
+
+
+        # TODO: LOSE CONDITION - Player's hp goes below 0
+        if player.hp_remaining() <= 0:
             done = True
+
         # ----------- CHANGE ENVIRONMENT
         # Process player movement based on mouse pos
         mouse_pos = pygame.mouse.get_pos()
-        player.rect.x, player.rect.y = mouse_pos[0]-player.rect.width/2, mouse_pos[1]-player.rect.height/2
+        player.rect.x = mouse_pos[0] - player.rect.width / 2
+        player.rect.y = mouse_pos[1] - player.rect.height / 2
 
-        # make all sprites move
+        # Update the location of all sprites
         all_sprites.update()
-        enemies_collided = pygame.sprite.spritecollide(player, enemey_sprites, False)
 
+        # Check all collisions between player and the ENEMIES
+        enemies_collided = pygame.sprite.spritecollide(player, enemy_sprites, False)
 
-
-        # set a time for invincibility at the beginning of the game
-        if time.time() - time_start > time_invincible:
+        # Set a time for invincibility at the beginning of the game
+        if time.time() - time_start > time_invincible and game_state != "won":
             for enemy in enemies_collided:
-                player.hp -= 10
-            blocks_collided = pygame.sprite.spritecollide(player, block_sprites, True)
-            for block in blocks_collided:
+                player.hp -= 1
+
+        # Check bullet collisions with enemies
+        # Kill the bullets when they've left the screen
+        for bullet in bullet_sprites:
+            enemies_bullet_collided = pygame.sprite.spritecollide(
+                bullet,
+                enemy_sprites,
+                True
+            )
+
+            # If the bullet has struck some enemy
+            if len(enemies_bullet_collided) > 0:
+                bullet.kill()
                 score += 1
+
+            if bullet.rect.y < 0:
+                bullet.kill()
+
         # ----------- DRAW THE ENVIRONMENT
         screen.fill(BGCOLOUR)      # fill with bgcolor
 
         # Draw all sprites
         all_sprites.draw(screen)
 
-        # draw the score on the screen
+        # Draw the score on the screen
         screen.blit(
             font.render(f"Score: {score}", True, BLACK),
-            (5,5)
+            (5, 5)
         )
 
+        # Draw a health bar
+        # Draw the background rectangle
         pygame.draw.rect(screen, GREEN, [580, 5, 215, 20])
         # Draw the foreground rectangle which is the remaining health
         life_remaining = 215 - int(215 * player.hp_remaining())
         pygame.draw.rect(screen, BLUE, [580, 5, life_remaining, 20])
 
-        # if we win, draw the text on the screen
+        # If we've won, draw the text on the screen
         if game_state == "won":
-            # TODO: finished the game state draw on screen
             screen.blit(
                 font.render(endgame_messages["win"], True, BLACK),
-                (SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
+                (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
             )
-        elif game_state == "lose":
-            screen.blit(
-                font.render(endgame_messages["lose"], True, BLACK),
-                (SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT // 2 - 50)
-            )
+
         # Update the screen
         pygame.display.flip()
 
